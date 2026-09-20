@@ -168,8 +168,194 @@ function PaymentScreen({ upiId, displayName, amount, note, setAmount, setNote, o
   return <><header className="flex items-center justify-between"><button type="button" onClick={onBack} aria-label="Back" className="rounded-full bg-white p-2 text-[#526a80] shadow-sm"><ArrowLeft className="size-4" /></button><p className="text-sm font-bold text-[#29445e]">Pay securely</p><button type="button" aria-label="More options" className="rounded-full p-2 text-[#526a80]"><MoreHorizontal className="size-5" /></button></header><div className="mt-7 flex items-center gap-3"><span className="flex size-12 items-center justify-center rounded-full bg-[#dcecff] text-sm font-bold text-[#1769d1]">{upiId ? upiId[0].toUpperCase() : '?'}</span><div><p className="text-sm font-bold text-[#213b57]">{upiId ? displayName : 'New recipient'}</p><p className="text-[11px] text-[#8091a1]">{upiId || 'UPI recipient'}</p></div></div><form onSubmit={onProceed} className="flex flex-1 flex-col"><div className="py-9 text-center"><p className="text-[11px] font-semibold text-[#8a9aaa]">Enter amount</p><div className="mt-2 flex items-center justify-center text-5xl font-semibold tracking-[-0.06em] text-[#16304b]"><span className="mr-1 text-3xl">₹</span><span>{amount || '0'}</span></div><input value={amount} onChange={(event) => setAmount(event.target.value.replace(/[^0-9.]/g, ''))} inputMode="decimal" aria-label="Amount" className="sr-only" /></div><div className="rounded-2xl border border-[#e1eaf1] bg-white px-4 py-3"><label htmlFor="note" className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#8a9aaa]">Add a note</label><input id="note" value={note} onChange={(event) => setNote(event.target.value)} placeholder="What is this for?" className="mt-1 w-full bg-transparent text-xs outline-none placeholder:text-[#aab7c1]" /></div><div className="mt-auto grid grid-cols-3 gap-2.5 pt-6">{['1','2','3','4','5','6','7','8','9','.','0','backspace'].map((key) => <button type="button" key={key} onClick={() => onKey(key)} className="h-11 rounded-xl bg-white text-base font-semibold text-[#29445e] shadow-sm transition hover:bg-[#eef5ff]">{key === 'backspace' ? '⌫' : key}</button>)}</div>{feedback && <p role="alert" className="mt-3 text-center text-[11px] font-semibold text-[#b4533c]">{feedback}</p>}<button type="submit" disabled={isChecking} className="mt-4 h-13 rounded-2xl bg-[#1769d1] text-sm font-bold text-white shadow-lg shadow-[#1769d1]/20 disabled:opacity-60">{isChecking ? 'Checking recipient...' : 'Proceed to pay'}<ChevronRight className="ml-1 inline size-4" /></button></form></>
 }
 
-function ReviewScreen({ upiId, displayName, amount, note, status, blacklistEntry, feedback, onBack, onReport, isReporting, onPay }: { upiId: string; displayName: string; amount: string; note: string; status: Status; blacklistEntry: BlacklistEntry; feedback: string; onBack: () => void; onReport: () => void; isReporting: boolean; onPay: () => void }) {
+function ReviewScreen({
+  upiId,
+  displayName,
+  amount,
+  note,
+  status,
+  blacklistEntry,
+  feedback,
+  onBack,
+  onReport,
+  isReporting,
+  onPay,
+}: {
+  upiId: string
+  displayName: string
+  amount: string
+  note: string
+  status: Status
+  blacklistEntry: BlacklistEntry | null
+  feedback: string
+  onBack: () => void
+  onReport: () => void
+  isReporting: boolean
+  onPay: () => void
+}) {
   const reportCount = Number(blacklistEntry?.reportCount || 0)
-  const paused = reportCount >= PAUSE_THRESHOLD || status === 'pause'
-  return <><header className="flex items-center justify-between"><button type="button" onClick={onBack} aria-label="Back" className="rounded-full bg-white p-2 text-[#526a80] shadow-sm"><ArrowLeft className="size-4" /></button><p className="text-sm font-bold text-[#29445e]">Review payment</p><button type="button" aria-label="Close" className="rounded-full p-2 text-[#526a80]"><X className="size-4" /></button></header><div className="mt-7 text-center"><span className="mx-auto flex size-14 items-center justify-center rounded-full bg-[#dcecff] text-lg font-bold text-[#1769d1]">{upiId[0]?.toUpperCase()}</span><p className="mt-3 text-sm font-bold text-[#213b57]">{displayName}</p><p className="mt-1 text-[11px] text-[#8091a1]">{upiId}</p><p className="mt-5 text-4xl font-semibold tracking-[-0.05em] text-[#16304b]">₹{amount}</p>{note && <p className="mt-1 text-[11px] text-[#8091a1]">For: {note}</p>}</div><div className={`mt-7 rounded-2xl border p-4 ${paused ? 'border-[#f5c9c1] bg-[#fff3f0]' : 'border-[#bfe8d8] bg-[#effaf5]'}`}><div className="flex items-start gap-3"><span className={`flex size-9 items-center justify-center rounded-xl ${paused ? 'bg-[#ffe0da] text-[#c2412d]' : 'bg-white text-[#11805d]'}`}>{paused ? '!' : '✓'}</span><div><p className={`text-xs font-bold ${paused ? 'text-[#b63d2c]' : 'text-[#14785b]'}`}>{paused ? 'Payment paused' : reportCount === 2 ? '2 community reports' : reportCount === 1 ? '1 community report' : 'Recipient checked'}</p><p className={`mt-1 text-[11px] leading-4 ${paused ? 'text-[#a85649]' : 'text-[#4d806e]'}`}>{paused ? `This recipient has been reported by the community · ${reportCount} community report${reportCount === 1 ? '' : 's'}. Do not continue with this payment.` : reportCount === 2 ? 'Multiple users have reported this recipient. Please verify before paying.' : reportCount === 1 ? 'This recipient has been reported once. Continue with caution.' : 'No reports found in the community.'}</p></div></div></div>{feedback && <p role="status" className="mt-3 text-center text-[11px] font-semibold text-[#14785b]">{feedback}</p>}<div className="mt-auto pt-6"><button type="button" onClick={onReport} disabled={isReporting} className="mb-4 block w-full text-center text-xs font-semibold text-[#b63d2c] underline underline-offset-4 disabled:opacity-60">{isReporting ? 'Reporting...' : 'Report as Scam'}</button><button type="button" onClick={onPay} disabled={paused} className="h-13 w-full rounded-2xl bg-[#1769d1] text-sm font-bold text-white shadow-lg shadow-[#1769d1]/20 disabled:cursor-not-allowed disabled:bg-[#c7d2dd]">{paused ? 'Payment paused' : `Pay ₹${amount}`}<ChevronRight className="ml-1 inline size-4" /></button></div></>
+
+  const paused =
+    reportCount >= PAUSE_THRESHOLD || status === "pause"
+
+  const nudged = !paused && status === "nudge"
+
+  return (
+    <>
+      <header className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label="Back"
+          className="rounded-full bg-white p-2 text-[#526a80] shadow-sm"
+        >
+          <ArrowLeft className="size-4" />
+        </button>
+
+        <p className="text-sm font-bold text-[#29445e]">
+          Review payment
+        </p>
+
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label="Close"
+          className="rounded-full p-2 text-[#526a80]"
+        >
+          <X className="size-4" />
+        </button>
+      </header>
+
+      <div className="mt-7 text-center">
+        <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-[#dceeff] text-lg font-bold text-[#1769d1]">
+          {upiId[0]?.toUpperCase()}
+        </span>
+
+        <p className="mt-3 text-sm font-bold text-[#213b57]">
+          {displayName}
+        </p>
+
+        <p className="mt-1 text-[11px] text-[#8091a1]">
+          {upiId}
+        </p>
+
+        <p className="mt-3 text-4xl font-bold tracking-[-0.05em] text-[#16304b]">
+          ₹{amount}
+        </p>
+
+        {note && (
+          <p className="mt-1 text-[11px] text-[#8091a1]">
+            For: {note}
+          </p>
+        )}
+      </div>
+
+      <div
+        className={`mt-7 rounded-2xl border p-4 ${
+          paused
+            ? "border-[#f5c9c1] bg-[#fff5f2]"
+            : nudged
+              ? "border-[#f3d28b] bg-[#fff9eb]"
+              : "border-[#bfe8d8] bg-[#effbf6]"
+        }`}
+      >
+        <div className="flex items-start gap-3">
+          <span
+            className={`flex size-10 shrink-0 items-center justify-center rounded-full ${
+              paused
+                ? "bg-[#ffe0da] text-[#c2412d]"
+                : nudged
+                  ? "bg-[#ffedb8] text-[#a66a00]"
+                  : "bg-white text-[#008f73]"
+            }`}
+          >
+            {paused ? "!" : nudged ? "!" : "✓"}
+          </span>
+
+          <div>
+            <p
+              className={`text-sm font-bold ${
+                paused
+                  ? "text-[#c2412d]"
+                  : nudged
+                    ? "text-[#a66a00]"
+                    : "text-[#008f73]"
+              }`}
+            >
+              {paused
+                ? "Payment paused"
+                : nudged
+                  ? "This payment looks unusual"
+                  : "Recipient checked"}
+            </p>
+
+            <p className="mt-1 text-[11px] leading-4 text-[#8091a1]">
+              {paused
+                ? reportCount > 0
+                  ? `This recipient has been reported by the community · ${reportCount} ${
+                      reportCount === 1 ? "report" : "reports"
+                    }. Do not continue with this payment.`
+                  : "This payment has been paused because it was detected as high risk."
+                : nudged
+                  ? "This payment is different from your usual activity. Please review the amount and recipient carefully before continuing."
+                  : reportCount === 0
+                    ? "No reports found in the community."
+                    : `${reportCount} community ${
+                        reportCount === 1 ? "report" : "reports"
+                      } found.`}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {nudged && (
+        <div className="mt-3 rounded-xl bg-[#fffaf0] px-4 py-3 text-center">
+          <p className="text-xs font-semibold text-[#8a6200]">
+            ⚠️ Take a moment to verify this payment
+          </p>
+          <p className="mt-1 text-[11px] text-[#927b48]">
+            Check the recipient and amount before confirming.
+          </p>
+        </div>
+      )}
+
+      {feedback && (
+        <p
+          role="status"
+          className="mt-3 text-center text-[11px] font-semibold text-[#14785b]"
+        >
+          {feedback}
+        </p>
+      )}
+
+      <div className="mt-auto pt-6">
+        {!paused && (
+          <button
+            type="button"
+            onClick={onReport}
+            disabled={isReporting}
+            className="mb-4 block w-full text-center text-xs font-semibold text-[#c2412d] underline underline-offset-4 disabled:opacity-60"
+          >
+            {isReporting ? "Reporting..." : "Report as Scam"}
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={onPay}
+          disabled={paused}
+          className={`h-13 w-full rounded-2xl text-sm font-bold text-white shadow-lg transition ${
+            paused
+              ? "cursor-not-allowed bg-[#c7d2dd]"
+              : nudged
+                ? "bg-[#d99000] shadow-[#d99000]/20"
+                : "bg-[#1769d1] shadow-[#1769d1]/20"
+          }`}
+        >
+          {paused ? "Payment paused" : nudged ? "Review & Pay" : `Pay ₹${amount}`}
+          <ChevronRight className="ml-1 inline size-4" />
+        </button>
+      </div>
+    </>
+  )
 }
