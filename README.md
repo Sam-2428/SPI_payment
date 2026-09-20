@@ -29,6 +29,10 @@ A warning shown **before** the payment is completed can prevent a potentially ha
 
 ### How it works
 Prototype Link : https://spipayment.vercel.app/
+
+## 🌐 Live Demo
+
+👉 **[Try SPI-Nudge Live](https://spipayment.vercel.app)**
 ```text
 User enters payment details
           ↓
